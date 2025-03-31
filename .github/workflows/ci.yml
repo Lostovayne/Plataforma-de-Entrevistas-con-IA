@@ -1,0 +1,93 @@
+name: CI Pipeline
+
+# Configuración de triggers: se ejecuta en pushes y PRs a la rama main
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    # Configuración de estrategia para permitir fallos rápidos
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+      fail-fast: false
+
+    steps:
+      # Paso 1: Checkout del código
+      - uses: actions/checkout@v4
+
+      # Paso 2: Configuración de caché para optimizar tiempos de construcción
+      - name: Cache bun modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.bun
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      # Paso 3: Instalación de Bun (runtime JavaScript)
+      - name: Install bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: "latest"
+
+      # Paso 4: Instalación de dependencias
+      - name: Install dependencies
+        run: bun install
+
+      # Verificaciones de calidad del código
+      - name: Run linter
+        run: bun run lint
+
+      # Verificaciones de seguridad
+      - name: Security audit for dependencies
+        run: bun audit
+
+      # Verificaciones de dependencias
+      - name: Check for dependency errors
+        run: bun pm ls --omit=dev
+
+      - name: Check for outdated dependencies
+        run: bun pm outdated
+
+      # Análisis de bundle para optimización de rendimiento
+      - name: Analyze bundle size
+        run: bun add -D webpack-bundle-analyzer && bun run analyze
+
+      # Auditoría de accesibilidad y rendimiento
+      - name: Run Lighthouse audit
+        uses: foo-software/lighthouse-check-action@v10
+        with:
+          urls: "http://localhost:3000"
+          temporaryPublicStorage: true
+
+      # Verificaciones específicas de Next.js
+      - name: Check server/client components
+        run: bun run check-components
+
+      - name: Verify image optimizations
+        run: bun run check-images
+
+      - name: Validate API routes
+        run: bun run check-api-routes
+
+      - name: Check missing environment variables
+        run: bun run check-env
+
+      - name: Next.js configuration audit
+        run: bun run check-next-config
+
+      # Nuevas verificaciones añadidas para Next.js 15
+      - name: Verify static/dynamic routes
+        run: bun run check-routes
+
+      - name: Check RSC (React Server Components) usage
+        run: bun run check-rsc
