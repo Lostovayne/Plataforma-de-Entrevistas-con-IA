@@ -35,7 +35,7 @@ jobs:
 
       # Paso 3: Instalación de Bun (runtime JavaScript)
       - name: Install bun
-        uses: oven-sh/setup-bun@latest
+        uses: oven-sh/setup-bun@v1
         with:
           bun-version: "latest"
 
