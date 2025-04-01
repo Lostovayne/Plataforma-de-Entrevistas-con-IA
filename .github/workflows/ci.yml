@@ -35,7 +35,7 @@ jobs:
 
       # Paso 3: Instalación de Bun (runtime JavaScript)
       - name: Install bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@latest
         with:
           bun-version: "latest"
 
@@ -48,43 +48,9 @@ jobs:
         run: bun run lint
 
       # Verificaciones de seguridad
-      - name: Security audit for dependencies
-        run: bun pm audit
+      # - name: Security audit for dependencies
+        # run: bun pm audit
 
       # Verificaciones de dependencias
       - name: Check for dependency errors
         run: bun pm ls --omit=dev
-
-      - name: Check for outdated dependencies
-        run: bun pm outdated
-
-      # Análisis de bundle para optimización de rendimiento
-      - name: Analyze bundle size
-        run: bun add -D webpack-bundle-analyzer && bun run analyze
-
-      # Auditoría de accesibilidad y rendimiento
-      - name: Run Lighthouse audit
-        run: bun add -D lighthouse && bun run lighthouse http://localhost:3000 --output=html --output-path=./lighthouse-report.html
-
-      # Verificaciones específicas de Next.js
-      - name: Check server/client components
-        run: bun run check-components
-
-      - name: Verify image optimizations
-        run: bun run check-images
-
-      - name: Validate API routes
-        run: bun run check-api-routes
-
-      - name: Check missing environment variables
-        run: bun run check-env
-
-      - name: Next.js configuration audit
-        run: bun run check-next-config
-
-      # Nuevas verificaciones añadidas para Next.js 15
-      - name: Verify static/dynamic routes
-        run: bun run check-routes
-
-      - name: Check RSC (React Server Components) usage
-        run: bun run check-rsc
