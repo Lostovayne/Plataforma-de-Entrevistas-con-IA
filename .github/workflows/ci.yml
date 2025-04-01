@@ -64,10 +64,7 @@ jobs:
 
       # Auditoría de accesibilidad y rendimiento
       - name: Run Lighthouse audit
-        uses: foo-software/lighthouse-check-action@v10
-        with:
-          urls: "http://localhost:3000"
-          temporaryPublicStorage: true
+        run: bun add -D lighthouse && bun run lighthouse http://localhost:3000 --output=html --output-path=./lighthouse-report.html
 
       # Verificaciones específicas de Next.js
       - name: Check server/client components
