@@ -7,6 +7,11 @@ on:
   pull_request:
     branches: [main]
 
+# Evita ejecuciones redundantes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -49,7 +54,7 @@ jobs:
 
       # Verificaciones de seguridad
       # - name: Security audit for dependencies
-        # run: bun pm audit
+      # run: bun pm audit
 
       # Verificaciones de dependencias
       - name: Check for dependency errors
