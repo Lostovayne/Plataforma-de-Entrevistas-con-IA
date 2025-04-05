@@ -35,6 +35,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
     try {
       if (type === "sign-up") {
         toast.success("Registro exitoso. Por favor inicie sesión para continuar");
