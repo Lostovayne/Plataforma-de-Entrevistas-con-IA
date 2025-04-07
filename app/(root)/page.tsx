@@ -7,7 +7,7 @@ function HomePage() {
     <>
       <section className="card-cta">
         <div className="flex flex-col gap-6 max-w-lg">
-          <h2>Prepárate para una Entrevista con la Práctica y los Comentarios de la IA.</h2>
+          <h2>Simula entrevistas y recibe feedback inteligente</h2>
           <p className="text-lg">Recibe respuestas instantáneas a preguntas reales.</p>
           <Button asChild className="btn-primary max-sm:w-full">
             <Link href={"/interview"}>Iniciar una entrevista</Link>
