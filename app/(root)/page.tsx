@@ -1,4 +1,6 @@
+import InterviewCard from "@/components/InterviewCard";
 import { Button } from "@/components/ui/button";
+import { dummyInterviews } from "@/constants";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -19,14 +21,18 @@ function HomePage() {
       <section className="flex flex-col gap-6 mt-8">
         <h2>Tus Entrevistas</h2>
         <div className="interviews-section">
-          <p>Aún no has hecho ninguna entrevista</p>
+        {dummyInterviews.map((interview) => (
+            <InterviewCard key={interview.id} {...interview} />
+          ))}
         </div>
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
         <h2>Hacer una entrevista</h2>
         <div className="interviews-section">
-          <p>No hay entrevistas disponibles</p>
+          {dummyInterviews.map((interview) => (
+            <InterviewCard key={interview.id} {...interview} />
+          ))}
         </div>
       </section>
     </>
