@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { getRandomInterviewCover } from "@/lib/utils";
 import { Button } from "./ui/button";
+import "dayjs/locale/es";
 import DisplayTechIcons from "./DisplayTechIcons";
 
 const InterviewCard = ({ interviewId, userId, role, type, techstack, createdAt }: InterviewCardProps) => {
   const feedback = null as Feedback | null;
   const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
-  const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format("MMMM D, YYYY");
-
+  const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).locale("es").format("MMMM D, YYYY")
+  console.log(formattedDate)
   return (
     <div className="card-border w-[360px] max-sm:w-full min-h-96">
       <div className="card-interview">
@@ -24,11 +25,11 @@ const InterviewCard = ({ interviewId, userId, role, type, techstack, createdAt }
             height={90}
             className="rounded-full object-fit size-[90px]"
           />
-          <h3 className="mt-5 capitalize">{role} Interview</h3>
+          <h3 className="mt-5 capitalize">Entrevista para {role}</h3>
           <div className="flex flex-row gap-5 mt-3">
             <div className="flex flex-row gap-2">
               <Image src={"/calendar.svg"} alt="calendar" width={22} height={22} />
-              <p>{formattedDate}</p>
+              <p className="camelcase">{formattedDate}</p>
             </div>
 
             <div className="flex flex-row gap-2 items-center">
