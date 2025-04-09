@@ -69,5 +69,4 @@ async function generateSummary() {
     process.exit(1);
   }
 }
-
 generateSummary().catch(console.error);
