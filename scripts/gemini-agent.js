@@ -49,10 +49,9 @@ async function reviewPullRequest() {
     const prompt = `Eres un revisor de código experto. Analiza los siguientes cambios de una Pull Request y proporciona una revisión detallada en español.
 
 Cambios de la PR:
-```
+\`\`\`
 ${prChanges}
-
-```
+\`\`\`
 
 Por favor, incluye en tu revisión:
 1. Un resumen de los cambios realizados
