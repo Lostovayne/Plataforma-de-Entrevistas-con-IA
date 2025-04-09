@@ -2,6 +2,10 @@ name: Gemini Documentation Updater
 
 on: [push]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   update-docs:
     runs-on: ubuntu-latest
@@ -27,10 +31,27 @@ jobs:
           fi
           node scripts/gemini-agent.js
         
-      - name: Commit changes
-        run: |
-          git config --global user.name "GitHub Gemini Agent"
-          git config --global user.email "gemini-agent@example.com"
-          git add README.md
-          git commit -m "docs: Update README with Gemini-generated summary" || exit 0
-          git push
+      - name: Create Issue instead of Push
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            try {
+              const readmeContent = fs.readFileSync('./README.md', 'utf8');
+              const summaryMatch = readmeContent.match(/## Resumen de Cambios\n\n([\s\S]*?)(?=##|$)/);
+              
+              if (!summaryMatch || !summaryMatch[1]) {
+                console.log('No se encontró el resumen de cambios en el README');
+                return;
+              }
+              
+              const summary = summaryMatch[1].trim();
+              
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '[DOCS] Actualización propuesta por Gemini',
+                body: `## Cambios propuestos por Gemini ${summary}
+

@@ -35,21 +35,27 @@ async function generateSummary() {
     const response = await result.response;
     const summary = response.text();
     
-    // Actualizar README
-    console.log('Actualizando README con el resumen generado');
+    // Generar contenido para la issue
+    console.log('Generando contenido para la issue con el resumen');
     const readmePath = './README.md';
     let readmeContent = fs.readFileSync(readmePath, 'utf8');
     
-    if (readmeContent.includes('## Resumen de Cambios')) {
-      readmeContent = readmeContent.replace(
+    // Crear una copia temporal del README con los cambios para que el workflow pueda leerlo
+    // pero sin modificar el archivo original
+    let updatedContent = readmeContent;
+    
+    if (updatedContent.includes('## Resumen de Cambios')) {
+      updatedContent = updatedContent.replace(
         /## Resumen de Cambios[\s\S]*?(?=##|$)/,
         `## Resumen de Cambios\n\n${summary}\n\n`
       );
     } else {
-      readmeContent += `\n\n## Resumen de Cambios\n\n${summary}\n`;
+      updatedContent += `\n\n## Resumen de Cambios\n\n${summary}\n`;
     }
     
-    fs.writeFileSync(readmePath, readmeContent);
+    // Escribir en un archivo temporal que será leído por el workflow
+    fs.writeFileSync('./README.md', updatedContent);
+    console.log('Contenido generado exitosamente para la creación de la issue')
     console.log('README actualizado exitosamente');
   } catch (error) {
     console.error('Error al generar el resumen con Gemini:');
