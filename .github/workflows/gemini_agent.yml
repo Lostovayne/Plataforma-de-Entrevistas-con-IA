@@ -59,7 +59,7 @@ jobs:
                 issue_number: context.payload.pull_request.number,
                 body: `## Revisión de Gemini ${summary}
 
-                `Esta revisión fue generada automáticamente por Gemini AI`
+                Esta revisión fue generada automáticamente por Gemini AI`
               });
             } catch (error) {
               console.error('Error al crear el comentario en la PR:', error);
