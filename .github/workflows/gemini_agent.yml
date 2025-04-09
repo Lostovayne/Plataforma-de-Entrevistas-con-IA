@@ -1,0 +1,30 @@
+name: Gemini Documentation Updater
+
+on: [push]
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm install @google/generative-ai
+      
+      - name: Run Gemini Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/gemini-agent.js
+        
+      - name: Commit changes
+        run: |
+          git config --global user.name "GitHub Gemini Agent"
+          git config --global user.email "gemini-agent@example.com"
+          git add README.md
+          git commit -m "docs: Update README with Gemini-generated summary" || exit 0
+          git push
