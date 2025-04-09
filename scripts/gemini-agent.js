@@ -4,11 +4,22 @@
 const fs = require('fs');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Verificar que la API key está disponible
+if (!process.env.GEMINI_API_KEY) {
+  console.error('Error: GEMINI_API_KEY no está definida en las variables de entorno');
+  process.exit(1);
+}
+
+console.log('Inicializando Gemini API con la clave proporcionada');
+const apiKey = process.env.GEMINI_API_KEY.trim(); // Eliminar posibles espacios en blanco
+const genAI = new GoogleGenerativeAI(apiKey);
 
 async function generateSummary() {
-  // Usar el modelo más reciente (1.5 o Pro según disponibilidad)
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+  try {
+    console.log('Iniciando generación de resumen con Gemini...');
+    // Usar el modelo más reciente (1.5 o Pro según disponibilidad)
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    console.log('Modelo seleccionado: gemini-1.5-pro');
   
   const prompt = `Genera un resumen profesional en español de los cambios realizados en el repositorio.
   Incluye:

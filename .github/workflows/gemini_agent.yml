@@ -19,7 +19,13 @@ jobs:
       - name: Run Gemini Agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node scripts/gemini-agent.js
+        run: |
+          echo "Verificando configuración de Gemini API"
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "Error: GEMINI_API_KEY no está configurada en los secretos de GitHub"
+            exit 1
+          fi
+          node scripts/gemini-agent.js
         
       - name: Commit changes
         run: |
