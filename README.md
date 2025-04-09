@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrepWise - Plataforma de Entrevistas con IA
 
-## Getting Started
+<div align="center">
+  <img src="/public/logo.svg" alt="PrepWise Logo" width="120" />
+  <h3>Simula entrevistas y recibe feedback inteligente</h3>
+</div>
 
-First, run the development server:
+## 📋 Descripción
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+PrepWise es una plataforma avanzada de simulación de entrevistas potenciada por Inteligencia Artificial. Diseñada para ayudar a los candidatos a prepararse para entrevistas laborales reales, ofrece un entorno interactivo donde los usuarios pueden practicar entrevistas personalizadas según el rol, nivel y stack tecnológico deseado, recibiendo feedback detallado y análisis de rendimiento.
+
+## ✨ Características Principales
+
+- **Simulación de Entrevistas Personalizadas**: Configura entrevistas según rol, nivel y tecnologías específicas.
+- **Entrevistador IA Avanzado**: Interactúa con un entrevistador virtual que adapta las preguntas según tus respuestas.
+- **Feedback Inteligente**: Recibe evaluaciones detalladas con puntuaciones por categoría, fortalezas y áreas de mejora.
+- **Múltiples Tipos de Entrevista**: Soporta diferentes formatos (técnicas, comportamentales, mixtas).
+- **Interfaz Intuitiva**: Diseño moderno y responsive optimizado para todas las plataformas.
+- **Autenticación Segura**: Sistema de registro y login integrado con Firebase.
+
+## 🛠️ Tecnologías
+
+### Frontend
+- **Next.js 15**: Framework React con renderizado híbrido y App Router.
+- **React 19**: Biblioteca UI con los últimos hooks y patrones.
+- **TypeScript**: Tipado estático para desarrollo robusto.
+- **Tailwind CSS**: Utilidades CSS para estilizado rápido y consistente.
+- **Radix UI**: Componentes accesibles y personalizables.
+
+### Backend & Servicios
+- **Firebase**: Autenticación, base de datos y almacenamiento.
+- **Google Generative AI**: Integración con modelos de IA avanzados.
+
+### Herramientas de Desarrollo
+- **ESLint**: Linting de código.
+- **Turbopack**: Compilación rápida durante desarrollo.
+
+## 🚀 Instalación y Uso
+
+### Requisitos Previos
+- Node.js 18.x o superior
+- npm o bun
+
+### Configuración
+
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/tu-usuario/plataforma-entrevistas.git
+   cd plataforma-entrevistas
+   ```
+
+2. Instala las dependencias:
+   ```bash
+   npm install
+   # o
+   bun install
+   ```
+
+3. Configura las variables de entorno:
+   Crea un archivo `.env.local` en la raíz del proyecto con las siguientes variables:
+   ```
+   # Firebase
+   NEXT_PUBLIC_FIREBASE_API_KEY=tu-api-key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=tu-auth-domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=tu-project-id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=tu-storage-bucket
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=tu-messaging-sender-id
+   NEXT_PUBLIC_FIREBASE_APP_ID=tu-app-id
+   
+   # Google AI
+   GOOGLE_AI_API_KEY=tu-google-ai-api-key
+   ```
+
+4. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   # o
+   bun dev
+   ```
+
+5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+## 📁 Estructura del Proyecto
+
+```
+├── app/                    # Rutas y layouts de Next.js
+│   ├── (auth)/             # Rutas de autenticación
+│   ├── (root)/             # Página principal y layout
+│   └── layout.tsx          # Layout principal
+├── components/             # Componentes reutilizables
+│   ├── ui/                 # Componentes de interfaz básicos
+│   └── ...                 # Otros componentes
+├── constants/              # Constantes y datos estáticos
+├── firebase/               # Configuración de Firebase
+├── lib/                    # Utilidades y funciones auxiliares
+├── public/                 # Archivos estáticos
+│   └── covers/             # Imágenes para tarjetas de entrevista
+└── types/                  # Definiciones de tipos TypeScript
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🧪 Desarrollo
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Scripts Disponibles
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `npm run dev`: Inicia el servidor de desarrollo con Turbopack.
+- `npm run build`: Construye la aplicación para producción.
+- `npm run start`: Inicia la aplicación en modo producción.
+- `npm run lint`: Ejecuta el linter para verificar el código.
 
-## Learn More
+## 📄 Licencia
 
-To learn more about Next.js, take a look at the following resources:
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 👥 Contribuciones
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Las contribuciones son bienvenidas. Por favor, sigue estos pasos:
 
-## Deploy on Vercel
+1. Haz fork del repositorio
+2. Crea una rama para tu feature (`git checkout -b feature/amazing-feature`)
+3. Haz commit de tus cambios (`git commit -m 'Add some amazing feature'`)
+4. Push a la rama (`git push origin feature/amazing-feature`)
+5. Abre un Pull Request
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+<div align="center">
+  <p>Desarrollado con ❤️ por el equipo de PrepWise</p>
+</div>
