@@ -1,7 +1,7 @@
 // tslint:disable
 
-
 const fs = require('fs');
+const { execSync } = require('child_process');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Verificar que la API key está disponible
@@ -14,51 +14,83 @@ console.log('Inicializando Gemini API con la clave proporcionada');
 const apiKey = process.env.GEMINI_API_KEY.trim(); // Eliminar posibles espacios en blanco
 const genAI = new GoogleGenerativeAI(apiKey);
 
-async function generateSummary() {
+async function reviewPullRequest() {
   try {
-    console.log('Iniciando generación de resumen con Gemini...');
+    console.log('Iniciando revisión de PR con Gemini...');
     // Usar el modelo más reciente (2.0 Pro)
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     console.log('Modelo seleccionado: gemini-2.0-flash');
-  
-    const prompt = `Genera un resumen profesional en español de los cambios realizados en el repositorio.
-    Incluye:
-    1. Cambios principales
-    2. Impacto esperado
-    3. Próximos pasos recomendados
     
-    Resumen:`;
+    // Obtener los cambios de la PR
+    console.log('Obteniendo cambios de la PR...');
+    const diffOutput = execSync('git diff --staged').toString();
+    
+    // Si no hay cambios, intentar obtener los cambios entre la rama actual y la rama base
+    let prChanges = diffOutput;
+    if (!prChanges || prChanges.trim() === '') {
+      try {
+        console.log('No se encontraron cambios staged, obteniendo diff entre ramas...');
+        // Obtener la rama base (normalmente main o master)
+        const baseBranch = 'main'; // Puedes ajustar esto según tu repositorio
+        prChanges = execSync(`git diff origin/${baseBranch}...HEAD`).toString();
+      } catch (diffError) {
+        console.error('Error al obtener el diff entre ramas:', diffError);
+        prChanges = 'No se pudieron obtener los cambios de la PR.';
+      }
+    }
+    
+    // Limitar el tamaño de los cambios para evitar exceder los límites de tokens
+    const maxChangesLength = 15000;
+    if (prChanges.length > maxChangesLength) {
+      console.log(`Los cambios son muy extensos (${prChanges.length} caracteres), limitando a ${maxChangesLength} caracteres...`);
+      prChanges = prChanges.substring(0, maxChangesLength) + '\n\n[... Cambios truncados debido al tamaño ...]';
+    }
+  
+    const prompt = `Eres un revisor de código experto. Analiza los siguientes cambios de una Pull Request y proporciona una revisión detallada en español.
+
+Cambios de la PR:
+```
+${prChanges}
+```
+
+Por favor, incluye en tu revisión:
+1. Un resumen de los cambios realizados
+2. Posibles problemas o bugs en el código
+3. Sugerencias de mejora (rendimiento, legibilidad, buenas prácticas)
+4. Cualquier vulnerabilidad de seguridad que detectes
+5. Recomendación final (aprobar, solicitar cambios, etc.)
+
+Formato tu respuesta de manera clara y profesional.`;
   
     console.log('Enviando prompt a Gemini API...');
     const result = await model.generateContent(prompt);
     console.log('Respuesta recibida de Gemini API');
     const response = await result.response;
-    const summary = response.text();
+    const review = response.text();
     
-    // Generar contenido para la issue
-    console.log('Generando contenido para la issue con el resumen');
+    // Generar contenido para el comentario en la PR
+    console.log('Generando contenido para el comentario en la PR');
     const readmePath = './README.md';
     let readmeContent = fs.readFileSync(readmePath, 'utf8');
     
     // Crear una copia temporal del README con los cambios para que el workflow pueda leerlo
-    // pero sin modificar el archivo original
     let updatedContent = readmeContent;
     
     if (updatedContent.includes('## Resumen de Cambios')) {
       updatedContent = updatedContent.replace(
         /## Resumen de Cambios[\s\S]*?(?=##|$)/,
-        `## Resumen de Cambios\n\n${summary}\n\n`
+        `## Resumen de Cambios\n\n${review}\n\n`
       );
     } else {
-      updatedContent += `\n\n## Resumen de Cambios\n\n${summary}\n`;
+      updatedContent += `\n\n## Resumen de Cambios\n\n${review}\n`;
     }
     
     // Escribir en un archivo temporal que será leído por el workflow
     fs.writeFileSync('./README.md', updatedContent);
-    console.log('Contenido generado exitosamente para la creación de la issue')
-    console.log('README actualizado exitosamente');
+    console.log('Revisión generada exitosamente para la PR');
+    
   } catch (error) {
-    console.error('Error al generar el resumen con Gemini:');
+    console.error('Error al generar la revisión con Gemini:');
     console.error(`Tipo de error: ${error.constructor.name}`);
     console.error(`Mensaje: ${error.message}`);
     
@@ -75,4 +107,5 @@ async function generateSummary() {
     process.exit(1);
   }
 }
-generateSummary().catch(console.error);
+
+reviewPullRequest().catch(console.error);

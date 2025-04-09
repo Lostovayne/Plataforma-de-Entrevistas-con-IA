@@ -1,16 +1,20 @@
-name: Gemini Documentation Updater
+name: Gemini PR Reviewer
 
-on: [push]
+on:
+  pull_request:
+    types: [opened, synchronize]
 
 permissions:
   contents: read
-  issues: write
+  pull-requests: write
 
 jobs:
-  update-docs:
+  review-pr:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -31,7 +35,7 @@ jobs:
           fi
           node scripts/gemini-agent.js
         
-      - name: Create Issue instead of Push
+      - name: Add PR Comment
         if: success()
         uses: actions/github-script@v6
         with:
@@ -49,9 +53,19 @@ jobs:
               
               const summary = summaryMatch[1].trim();
               
-              await github.rest.issues.create({
+              await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: '[DOCS] Actualización propuesta por Gemini',
-                body: `## Cambios propuestos por Gemini ${summary}
+                issue_number: context.payload.pull_request.number,
+                body: `## Revisión de Gemini
+
+${summary}
+
+Esta revisión fue generada automáticamente por Gemini AI.`
+              });
+            } catch (error) {
+              console.error('Error al crear el comentario en la PR:', error);
+            }
+          }
+          
 
