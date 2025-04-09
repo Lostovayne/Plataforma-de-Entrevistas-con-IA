@@ -62,7 +62,7 @@ async function generateSummary() {
       console.error('Asegúrate de que:');
       console.error('1. La API key está correctamente configurada en los secretos de GitHub');
       console.error('2. La API key es válida y está activa');
-      console.error('3. La API key tiene permisos para acceder al modelo gemini-2.0-pro');
+      console.error('3. La API key tiene permisos para acceder al modelo gemini-2.0-flash');
       console.error('4. Has registrado y activado la API en Google AI Studio');
     }
     
