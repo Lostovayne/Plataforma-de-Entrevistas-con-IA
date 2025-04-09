@@ -7,6 +7,7 @@ import "dayjs/locale/es";
 import DisplayTechIcons from "./DisplayTechIcons";
 
 const InterviewCard = ({ interviewId, userId, role, type, techstack, createdAt }: InterviewCardProps) => {
+  console.log(userId)
   const feedback = null as Feedback | null;
   const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
   const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).locale("es").format("MMMM D, YYYY")

@@ -7,7 +7,7 @@ import Link from "next/link";
 function HomePage() {
   return (
     <>
-      <section className="card-cta">
+      <section className="card-cta max-h-72">
         <div className="flex flex-col gap-6 max-w-lg">
           <h2>Simula entrevistas y recibe feedback inteligente</h2>
           <p className="text-lg">Recibe respuestas instantáneas a preguntas reales.</p>
