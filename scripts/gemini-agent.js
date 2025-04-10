@@ -46,26 +46,21 @@ async function reviewPullRequest() {
       prChanges = prChanges.substring(0, maxChangesLength) + '\n\n[... Cambios truncados debido al tamaño ...]';
     }
   
-    const prompt = `Eres un revisor senior de TypeScript con 10+ años de experiencia. Analiza exhaustivamente estos cambios de PR enfocándote en:
+    const prompt = `Eres un revisor senior de TypeScript con 10+ años de experiencia. Analiza estos cambios de PR enfocándote SOLO en el código modificado:
 
-1. **Tipado avanzado**:
-   - Uso óptimo de generics
-   - Segregación de interfaces
-   - Type guards
-   - Utility types
-   - Tipos condicionales
+1. **Título conciso**:
+   - Genera un título breve (máx 10 palabras) que describa el propósito principal de la PR
 
-2. **Principios SOLID**:
-   - Single Responsibility
-   - Open/Closed
-   - Liskov Substitution
-   - Interface Segregation
-   - Dependency Inversion
+2. **Análisis de cambios**:
+   - Revisa SOLO el código modificado en la PR
+   - Sugiere mejoras de tipado SOLO para el código presente
+   - Si no hay tipos, sugiere cómo tipar correctamente
+   - Evita asumir funcionalidades no presentes
 
-3. **Arquitectura limpia**:
-   - Estructura de carpetas
-   - Nombres descriptivos
-   - Cohesión/desacoplamiento
+3. **Mejoras específicas**:
+   - Tipado avanzado (solo si aplica al código modificado)
+   - Principios SOLID (solo si hay violaciones evidentes)
+   - Estructura (solo si hay problemas claros)
 
 Cambios de la PR:
 \`\`\`diff
@@ -73,33 +68,14 @@ ${prChanges}
 \`\`\`
 
 Formato requerido:
-1. **Resumen técnico** (máx 5 líneas)
-2. **Mejoras de tipos** (ejemplos concretos con código optimizado)
-3. **Patrones arquitectónicos** (sugerencias basadas en SOLID)
-4. **Ejemplos avanzados** (muestra cómo implementar generics/guards cuando aplique)
+1. **Título**: Breve y descriptivo
+2. **Resumen**: Máx 3 líneas explicando el cambio principal
+3. **Mejoras de tipado**: SOLO para código modificado (si aplica)
+4. **Optimizaciones**: SOLO si son evidentes en el código presente
 
-Ejemplo de sugerencia:
-\`\`\`typescript
-// Antes:
-function process(data: any) { ... }
+Ejemplo de título: "Mejora tipado en función de autenticación"
 
-// Optimizado con generics y type guards:
-interface Processable<T extends { id: string }> {
-  validate: (data: unknown) => data is T;
-  transform: (data: T) => Promise<T>;
-}
-
-export function createProcessor<T extends { id: string }>(
-  config: Processable<T>
-): (data: unknown) => Promise<T | null> {
-  return async (data) => {
-    if (!config.validate(data)) return null;
-    return await config.transform(data);
-  };
-}
-\`\`\`
-
-Sé exhaustivo pero conciso. Prioriza calidad sobre cantidad.`;
+Sé conciso y evita suposiciones sobre código no presente.`;
   
     console.log('Enviando prompt a Gemini API...');
     const result = await model.generateContent(prompt);

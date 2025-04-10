@@ -35,11 +35,19 @@ jobs:
           fi
           node scripts/gemini-agent.js
 
+      # Paso para generar el token de la GitHub App
+      - name: Generate App Token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
       - name: Add PR Comment
         if: success()
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.generate_token.outputs.token }}  # Usamos el token generado por la GitHub App
           script: |
             const fs = require('fs');
             try {
@@ -57,9 +65,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-                body: `## Revisión de Gemini ${summary}
-
-                Esta revisión fue generada automáticamente por Gemini AI`
+                body: `## Revisión de Gemini\n${summary}\n\nEsta revisión fue generada automáticamente por Gemini AI`
               });
             } catch (error) {
               console.error('Error al crear el comentario en la PR:', error);
