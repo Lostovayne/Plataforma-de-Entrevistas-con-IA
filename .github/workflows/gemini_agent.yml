@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  actions: read
+  actions: read  
 
 jobs:
   review-pr:
@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch_dept: 0
+          fetch-depth: 0
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -59,18 +59,11 @@ jobs:
           cd scripts
           bun run gemini-agent.js
 
-      - name: Generate App Token
-        id: generate_token
-        uses: tibdex/github-app-token@v2
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.PRIVATE_KEY }}
-
       - name: Add PR Comment
         if: success()
         uses: actions/github-script@v6
         with:
-          github-token: ${{ steps.generate_token.outputs.token }}
+          github-token: ${{ github.token }}
           script: |
             const fs = require('fs');
             try {

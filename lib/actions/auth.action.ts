@@ -37,5 +37,6 @@ export async function signUp(params: SignUpParams) {
 }
 
 export async function setSessionCookie(idToken: string) {
+  console.log("idToken", idToken);
   //* Set the session cookie
 }
