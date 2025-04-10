@@ -32,7 +32,15 @@ async function reviewPullRequest() {
         console.log('No se encontraron cambios staged, obteniendo diff entre ramas...');
         // Obtener la rama base (normalmente main o master)
         const baseBranch = 'main'; // Puedes ajustar esto según tu repositorio
-        prChanges = execSync(`git diff origin/${baseBranch}...HEAD`).toString();
+        
+        // Verificar si la rama remota existe
+        try {
+          execSync(`git ls-remote --heads origin ${baseBranch}`).toString();
+          prChanges = execSync(`git diff origin/${baseBranch}...HEAD`).toString();
+        } catch (remoteError) {
+          console.log(`La rama remota origin/${baseBranch} no existe, usando rama local...`);
+          prChanges = execSync(`git diff ${baseBranch}...HEAD`).toString();
+        }
       } catch (diffError) {
         console.error('Error al obtener el diff entre ramas:', diffError);
         prChanges = 'No se pudieron obtener los cambios de la PR.';
@@ -86,7 +94,13 @@ Sé conciso y evita suposiciones sobre código no presente.`;
     // Generar contenido para el comentario en la PR
     console.log('Generando contenido para el comentario en la PR');
     const readmePath = './README.md';
-    let readmeContent = fs.readFileSync(readmePath, 'utf8');
+    let readmeContent;
+    try {
+      readmeContent = fs.readFileSync(readmePath, 'utf8');
+    } catch (readError) {
+      console.error('Error al leer README.md:', readError);
+      readmeContent = '# Resumen de Cambios\n\n' + review;
+    }
     
     // Crear una copia temporal del README con los cambios para que el workflow pueda leerlo
     let updatedContent = readmeContent;
