@@ -32,7 +32,15 @@ async function reviewPullRequest() {
         console.log('No se encontraron cambios staged, obteniendo diff entre ramas...');
         // Obtener la rama base (normalmente main o master)
         const baseBranch = 'main'; // Puedes ajustar esto según tu repositorio
-        prChanges = execSync(`git diff origin/${baseBranch}...HEAD`).toString();
+        
+        // Verificar si la rama remota existe
+        try {
+          execSync(`git ls-remote --heads origin ${baseBranch}`).toString();
+          prChanges = execSync(`git diff origin/${baseBranch}...HEAD`).toString();
+        } catch (remoteError) {
+          console.log(`La rama remota origin/${baseBranch} no existe, usando rama local...`);
+          prChanges = execSync(`git diff ${baseBranch}...HEAD`).toString();
+        }
       } catch (diffError) {
         console.error('Error al obtener el diff entre ramas:', diffError);
         prChanges = 'No se pudieron obtener los cambios de la PR.';
@@ -46,21 +54,36 @@ async function reviewPullRequest() {
       prChanges = prChanges.substring(0, maxChangesLength) + '\n\n[... Cambios truncados debido al tamaño ...]';
     }
   
-    const prompt = `Eres un revisor de código experto. Analiza los siguientes cambios de una Pull Request y proporciona una revisión detallada en español.
+    const prompt = `Eres un revisor senior de TypeScript con 10+ años de experiencia. Analiza estos cambios de PR enfocándote SOLO en el código modificado:
+
+1. **Título conciso**:
+   - Genera un título breve (máx 10 palabras) que describa el propósito principal de la PR
+
+2. **Análisis de cambios**:
+   - Revisa SOLO el código modificado en la PR
+   - Sugiere mejoras de tipado SOLO para el código presente
+   - Si no hay tipos, sugiere cómo tipar correctamente
+   - Evita asumir funcionalidades no presentes
+
+3. **Mejoras específicas**:
+   - Tipado avanzado (solo si aplica al código modificado)
+   - Principios SOLID (solo si hay violaciones evidentes)
+   - Estructura (solo si hay problemas claros)
 
 Cambios de la PR:
-```
+\`\`\`diff
 ${prChanges}
-```
+\`\`\`
 
-Por favor, incluye en tu revisión:
-1. Un resumen de los cambios realizados
-2. Posibles problemas o bugs en el código
-3. Sugerencias de mejora (rendimiento, legibilidad, buenas prácticas)
-4. Cualquier vulnerabilidad de seguridad que detectes
-5. Recomendación final (aprobar, solicitar cambios, etc.)
+Formato requerido:
+1. **Título**: Breve y descriptivo
+2. **Resumen**: Máx 3 líneas explicando el cambio principal
+3. **Mejoras de tipado**: SOLO para código modificado (si aplica)
+4. **Optimizaciones**: SOLO si son evidentes en el código presente
 
-Formato tu respuesta de manera clara y profesional.`;
+Ejemplo de título: "Mejora tipado en función de autenticación"
+
+Sé conciso y evita suposiciones sobre código no presente.`;
   
     console.log('Enviando prompt a Gemini API...');
     const result = await model.generateContent(prompt);
@@ -71,7 +94,13 @@ Formato tu respuesta de manera clara y profesional.`;
     // Generar contenido para el comentario en la PR
     console.log('Generando contenido para el comentario en la PR');
     const readmePath = './README.md';
-    let readmeContent = fs.readFileSync(readmePath, 'utf8');
+    let readmeContent;
+    try {
+      readmeContent = fs.readFileSync(readmePath, 'utf8');
+    } catch (readError) {
+      console.error('Error al leer README.md:', readError);
+      readmeContent = '# Resumen de Cambios\n\n' + review;
+    }
     
     // Crear una copia temporal del README con los cambios para que el workflow pueda leerlo
     let updatedContent = readmeContent;

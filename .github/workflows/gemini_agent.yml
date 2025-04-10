@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  actions: read
 
 jobs:
   review-pr:
@@ -14,15 +15,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch_dept: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "20"
+          bun-version: latest
 
-      - name: Install dependencies
-        run: npm install @google/generative-ai
+      - name: Install Dependencies
+        run: bun install
+        env:
+          BUN_INSTALL_CACHE_DIR: ~/.bun/cache
+
+      - name: Cache Bun Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Debug Secret Availability
+        run: |
+          echo "GEMINI_API_KEY length: ${#GEMINI_API_KEY}"
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "Error: GEMINI_API_KEY no está configurada o no es accesible"
+            exit 1
+          else
+            echo "GEMINI_API_KEY está configurada correctamente"
+          fi
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
       - name: Run Gemini Agent
         env:
@@ -33,13 +56,21 @@ jobs:
             echo "Error: GEMINI_API_KEY no está configurada en los secretos de GitHub"
             exit 1
           fi
-          node scripts/gemini-agent.js
+          cd scripts
+          bun run gemini-agent.js
+
+      - name: Generate App Token
+        id: generate_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
 
       - name: Add PR Comment
         if: success()
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.generate_token.outputs.token }}
           script: |
             const fs = require('fs');
             try {
@@ -57,9 +88,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-                body: `## Revisión de Gemini ${summary}
-
-                `Esta revisión fue generada automáticamente por Gemini AI`
+                body: `## Revisión de Gemini\n${summary}\n\nEsta revisión fue generada automáticamente por Gemini AI`
               });
             } catch (error) {
               console.error('Error al crear el comentario en la PR:', error);
