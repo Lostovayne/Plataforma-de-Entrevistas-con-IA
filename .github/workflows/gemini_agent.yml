@@ -7,29 +7,26 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  actions: read
 
 jobs:
   review-pr:
     runs-on: ubuntu-latest
     steps:
-      # Checkout del código
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch_dept: 0
 
-      # Configurar Bun (última versión)
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest # Usa la última versión de Bun
+          bun-version: latest
 
-      # Instalar dependencias
       - name: Install Dependencies
         run: bun install
         env:
-          BUN_INSTALL_CACHE_DIR: ~/.bun/cache # Directorio de caché de Bun
+          BUN_INSTALL_CACHE_DIR: ~/.bun/cache
 
-      # Cache explícito para optimizar futuras ejecuciones
       - name: Cache Bun Dependencies
         uses: actions/cache@v4
         with:
@@ -38,7 +35,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
 
-      # Ejecutar el agente Gemini con Bun
+      - name: Debug Secret Availability
+        run: |
+          echo "GEMINI_API_KEY length: ${#GEMINI_API_KEY}"
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "Error: GEMINI_API_KEY no está configurada o no es accesible"
+            exit 1
+          else
+            echo "GEMINI_API_KEY está configurada correctamente"
+          fi
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
       - name: Run Gemini Agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -51,7 +59,6 @@ jobs:
           cd scripts
           bun run gemini-agent.js
 
-      # Generar el token de la GitHub App
       - name: Generate App Token
         id: generate_token
         uses: tibdex/github-app-token@v2
@@ -59,7 +66,6 @@ jobs:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.PRIVATE_KEY }}
 
-      # Agregar comentario al PR
       - name: Add PR Comment
         if: success()
         uses: actions/github-script@v6
