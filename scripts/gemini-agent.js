@@ -94,7 +94,7 @@ Sé conciso y evita suposiciones sobre código no presente.`;
     
     // Generar contenido para el comentario en la PR
     console.log('Generando contenido para el comentario en la PR');
-    const readmePath = './README.md';
+    const readmePath = '../README.md';
     let readmeContent;
     try {
       readmeContent = fs.readFileSync(readmePath, 'utf8');
@@ -116,7 +116,7 @@ Sé conciso y evita suposiciones sobre código no presente.`;
     }
     
     // Escribir en un archivo temporal que será leído por el workflow
-    fs.writeFileSync('./README.md', updatedContent);
+    fs.writeFileSync('../README.md', updatedContent);
     console.log('Revisión generada exitosamente para la PR');
     
   } catch (error) {
