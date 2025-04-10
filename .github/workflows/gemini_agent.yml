@@ -21,13 +21,13 @@ jobs:
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest  # Usa la última versión de Bun
+          bun-version: latest # Usa la última versión de Bun
 
-      # Restaurar caché de Bun e instalar dependencias
-      - name: Restore Bun Cache and Install Dependencies
-        run: bun install @google/generative-ai
+      # Instalar dependencias
+      - name: Install Dependencies
+        run: bun install
         env:
-          BUN_INSTALL_CACHE_DIR: ~/.bun/cache  # Directorio de caché de Bun
+          BUN_INSTALL_CACHE_DIR: ~/.bun/cache # Directorio de caché de Bun
 
       # Cache explícito para optimizar futuras ejecuciones
       - name: Cache Bun Dependencies
@@ -48,7 +48,8 @@ jobs:
             echo "Error: GEMINI_API_KEY no está configurada en los secretos de GitHub"
             exit 1
           fi
-          bun run scripts/gemini-agent.js
+          cd scripts
+          bun run gemini-agent.js
 
       # Generar el token de la GitHub App
       - name: Generate App Token
