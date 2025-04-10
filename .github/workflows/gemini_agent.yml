@@ -8,6 +8,9 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  checks: write
+  statuses: write
+  actions: write
 
 jobs:
   review-pr:
@@ -43,6 +46,7 @@ jobs:
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.PRIVATE_KEY }}
+          permissions: repo, write:discussion
 
       - name: Add PR Comment
         if: success()
