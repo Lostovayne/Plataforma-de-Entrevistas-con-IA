@@ -25,6 +25,8 @@ jobs:
     steps:
       # Paso 1: Checkout del código
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Obtener historial completo para análisis de cambios
 
       # Paso 2: Configuración de caché para optimizar tiempos de construcción
       - name: Cache bun modules
@@ -51,11 +53,42 @@ jobs:
       # Verificaciones de calidad del código
       - name: Run linter
         run: bun run lint
+        continue-on-error: false # Falla el pipeline si hay errores de linting
+
+      # Paso para corregir automáticamente errores de linting (opcional)
+      - name: Auto-fix linting errors
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          bun run lint --fix
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Auto-fix linting errors" || echo "No changes to commit"
+          git push || echo "No changes to push"
+
+      # Verificaciones de tipos de TypeScript
+      - name: Type check
+        run: bun run tsc --noEmit
 
       # Verificaciones de seguridad
-      # - name: Security audit for dependencies
-      # run: bun pm audit
+      - name: Security audit for dependencies
+        run: bun pm audit
+        continue-on-error: true # No falla el pipeline, pero reporta vulnerabilidades
 
       # Verificaciones de dependencias
       - name: Check for dependency errors
         run: bun pm ls --omit=dev
+
+      # Paso de construcción para verificar que la aplicación se construye correctamente
+      - name: Build application
+        run: bun run build
+        
+  # Job para despliegue (comentado, activar cuando sea necesario)
+  # deploy:
+  #   needs: verify
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Deploy to production
+  #       run: echo "Implementar pasos de despliegue aquí"

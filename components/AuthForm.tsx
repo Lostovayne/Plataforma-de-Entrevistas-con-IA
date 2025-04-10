@@ -9,8 +9,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { auth } from "@/firebase/client";
-import { signUp } from "@/lib/actions/auth.action";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { signIn, signUp } from "@/lib/actions/auth.action";
+import { FirebaseError } from "firebase/app";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import FormField from "./FormField";
@@ -18,7 +19,8 @@ import { Button } from "./ui/button";
 
 const authFormSchema = (type: FormType) => {
   return z.object({
-    name: type === "sign-up" ? z.string().min(3, "El nombre es obligatorio") : z.string().optional(),
+    name:
+      type === "sign-up" ? z.string().min(3, "El nombre es obligatorio") : z.string().optional(),
     email: z.string().email("Correo inválido"),
     password: z.string().min(3, "La contraseña debe tener al menos 3 caracteres"),
   });
@@ -38,7 +40,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     try {
       if (type === "sign-up") {
         //* Envia los valores al server action para registrar al usuario *//
@@ -50,19 +51,39 @@ const AuthForm = ({ type }: { type: FormType }) => {
           email,
           password,
         });
-
         if (!result?.success) {
           toast.error(result?.message);
           return;
         }
+
         toast.success("Registro exitoso. Por favor inicie sesión para continuar");
         router.push("/sign-in");
       } else {
-        toast.success("Inicio de sesión exitoso");
+        //* Envia los valores al server action para iniciar sesión *//
+        const { email, password } = values;
+        const userCredentials = await signInWithEmailAndPassword(auth, email, password);
+        const idToken = await userCredentials.user.getIdToken();
+
+        if (!idToken) {
+          toast.error("Error al iniciar sesión");
+          return;
+        }
+        const result = signIn({ email, idToken });
+        // toast.success("Inicio de sesión exitoso");
+        toast.promise(result, {
+          loading: "Iniciando sesión...",
+          success: "Inicio de sesión exitoso",
+          error: "Error al iniciar sesión",
+        });
         router.push("/");
       }
     } catch (error) {
-      toast.error(`Error al iniciar sesión: ${error}`);
+      if (error instanceof FirebaseError) {
+        if (error.code === "auth/invalid-credential") {
+          toast.error("Correo o contraseña incorrectos");
+          return;
+        }
+      }
     }
   }
 
@@ -110,7 +131,11 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
         <p className="text-center">
           {isSignIn ? "¿No tienes una cuenta?" : "¿Ya tienes una cuenta?"}
-          <Link prefetch href={isSignIn ? "/sign-up" : "/sign-in"} className="font-bold text-user-primary ml-1">
+          <Link
+            prefetch
+            href={isSignIn ? "/sign-up" : "/sign-in"}
+            className="font-bold text-user-primary ml-1"
+          >
             {!isSignIn ? "Iniciar sesión" : "Regístrate"}
           </Link>
         </p>
