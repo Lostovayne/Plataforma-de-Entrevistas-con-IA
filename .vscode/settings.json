@@ -1,5 +1,3 @@
 {
-  "github-actions.workflows.pinned.workflows": [
-    ".github/workflows/gemini_agent.yml"
-  ]
+  "github-actions.workflows.pinned.workflows": []
 }
