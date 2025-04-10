@@ -38,6 +38,7 @@ async function reviewPullRequest() {
           execSync(`git ls-remote --heads origin ${baseBranch}`).toString();
           prChanges = execSync(`git diff origin/${baseBranch}...HEAD`).toString();
         } catch (remoteError) {
+          console.log('Error al obtener la rama remota:', remoteError);
           console.log(`La rama remota origin/${baseBranch} no existe, usando rama local...`);
           prChanges = execSync(`git diff ${baseBranch}...HEAD`).toString();
         }
