@@ -7,32 +7,38 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  issues: write
 
 jobs:
   review-pr:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Checkout del código
+      - uses: actions/checkout$v4
         with:
           fetch-depth: 0
 
+      # Configurar Bun (última versión)
       - name: Set up Bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 'latest'
+          bun-version: latest  # Usa la última versión de Bun
 
-      - name: Cache Bun dependencies
-        uses: actions/cache@v3
+      # Restaurar caché de Bun e instalar dependencias
+      - name: Restore Bun Cache and Install Dependencies
+        run: bun install @google/generative-ai
+        env:
+          BUN_INSTALL_CACHE_DIR: ~/.bun/cache  # Directorio de caché de Bun
+
+      # Cache explícito para optimizar futuras ejecuciones
+      - name: Cache Bun Dependencies
+        uses: actions/cache@v4
         with:
-          path: ~/.bun
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+          path: ~/.bun/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
           restore-keys: |
             ${{ runner.os }}-bun-
 
-      - name: Install dependencies
-        run: bun install @google/generative-ai
-
+      # Ejecutar el agente Gemini con Bun
       - name: Run Gemini Agent
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -42,22 +48,22 @@ jobs:
             echo "Error: GEMINI_API_KEY no está configurada en los secretos de GitHub"
             exit 1
           fi
-          node scripts/gemini-agent.js
+          bun run scripts/gemini-agent.js
 
-      # Paso para generar el token de la GitHub App
+      # Generar el token de la GitHub App
       - name: Generate App Token
         id: generate_token
         uses: tibdex/github-app-token@v2
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.PRIVATE_KEY }}
-          permissions: repo, write:discussion
 
+      # Agregar comentario al PR
       - name: Add PR Comment
         if: success()
         uses: actions/github-script@v6
         with:
-          github-token: ${{ steps.generate_token.outputs.token }}  # Usamos el token generado por la GitHub App
+          github-token: ${{ steps.generate_token.outputs.token }}
           script: |
             const fs = require('fs');
             try {
