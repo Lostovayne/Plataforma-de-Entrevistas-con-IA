@@ -8,6 +8,9 @@ import { Form } from "@/components/ui/form";
 import Image from "next/image";
 import Link from "next/link";
 
+import { auth } from "@/firebase/client";
+import { signUp } from "@/lib/actions/auth.action";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import FormField from "./FormField";
@@ -34,10 +37,24 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
     try {
       if (type === "sign-up") {
+        //* Envia los valores al server action para registrar al usuario *//
+        const { name, email, password } = values;
+        const userCretentials = await createUserWithEmailAndPassword(auth, email, password);
+        const result = await signUp({
+          uid: userCretentials.user.uid,
+          name: name!,
+          email,
+          password,
+        });
+
+        if (!result?.success) {
+          toast.error(result?.message);
+          return;
+        }
         toast.success("Registro exitoso. Por favor inicie sesión para continuar");
         router.push("/sign-in");
       } else {
