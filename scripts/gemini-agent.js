@@ -46,21 +46,60 @@ async function reviewPullRequest() {
       prChanges = prChanges.substring(0, maxChangesLength) + '\n\n[... Cambios truncados debido al tamaño ...]';
     }
   
-    const prompt = `Eres un revisor de código experto. Analiza los siguientes cambios de una Pull Request y proporciona una revisión detallada en español.
+    const prompt = `Eres un revisor senior de TypeScript con 10+ años de experiencia. Analiza exhaustivamente estos cambios de PR enfocándote en:
+
+1. **Tipado avanzado**:
+   - Uso óptimo de generics
+   - Segregación de interfaces
+   - Type guards
+   - Utility types
+   - Tipos condicionales
+
+2. **Principios SOLID**:
+   - Single Responsibility
+   - Open/Closed
+   - Liskov Substitution
+   - Interface Segregation
+   - Dependency Inversion
+
+3. **Arquitectura limpia**:
+   - Estructura de carpetas
+   - Nombres descriptivos
+   - Cohesión/desacoplamiento
 
 Cambios de la PR:
-\`\`\`
+\`\`\`diff
 ${prChanges}
 \`\`\`
 
-Por favor, incluye en tu revisión:
-1. Un resumen de los cambios realizados
-2. Posibles problemas o bugs en el código
-3. Sugerencias de mejora (rendimiento, legibilidad, buenas prácticas)
-4. Cualquier vulnerabilidad de seguridad que detectes
-5. Recomendación final (aprobar, solicitar cambios, etc.)
+Formato requerido:
+1. **Resumen técnico** (máx 5 líneas)
+2. **Mejoras de tipos** (ejemplos concretos con código optimizado)
+3. **Patrones arquitectónicos** (sugerencias basadas en SOLID)
+4. **Ejemplos avanzados** (muestra cómo implementar generics/guards cuando aplique)
 
-Formato tu respuesta de manera clara y profesional.`;
+Ejemplo de sugerencia:
+\`\`\`typescript
+// Antes:
+function process(data: any) { ... }
+
+// Optimizado con generics y type guards:
+interface Processable<T extends { id: string }> {
+  validate: (data: unknown) => data is T;
+  transform: (data: T) => Promise<T>;
+}
+
+export function createProcessor<T extends { id: string }>(
+  config: Processable<T>
+): (data: unknown) => Promise<T | null> {
+  return async (data) => {
+    if (!config.validate(data)) return null;
+    return await config.transform(data);
+  };
+}
+\`\`\`
+
+Sé exhaustivo pero conciso. Prioriza calidad sobre cantidad.`;
   
     console.log('Enviando prompt a Gemini API...');
     const result = await model.generateContent(prompt);
