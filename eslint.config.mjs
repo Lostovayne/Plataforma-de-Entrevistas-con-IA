@@ -11,6 +11,8 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  // Añadir configuración de Prettier para evitar conflictos con ESLint
+  ...compat.extends("prettier"),
 ];
 
 export default eslintConfig;

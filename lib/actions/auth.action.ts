@@ -8,8 +8,8 @@ const ONE_WEEK = 60 * 60 * 24 * 7;
 export async function signUp(params: SignUpParams): Promise<{ success: boolean; message: string } | undefined> {
   const { uid, name, email } = params;
 
+  //* Busca si el usuario ya existe en la base de datos
   try {
-    //* Busca si el usuario ya existe en la base de datos
     const userRecord = await db.collection("users").doc(uid).get();
     if (userRecord.exists) {
       return {
@@ -17,18 +17,13 @@ export async function signUp(params: SignUpParams): Promise<{ success: boolean; 
         message: "El usuario ya existe. Por favor inicie sesión para continuar",
       };
     }
-    await db.collection("users").doc(uid).set({
-      name,
-      email,
-    });
+    await db.collection("users").doc(uid).set({ name, email });
 
     return {
       success: true,
       message: "Cuenta creada exitosamente. Por favor inicie sesión para continuar",
     };
-
   } catch (error) {
-    console.log("Error creating a user", error);
     if (error instanceof FirebaseError) {
       if (error.code === "auth/email-already-exists" || error.code === "auth/email-already-in-use") {
         return {
