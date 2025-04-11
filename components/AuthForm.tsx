@@ -8,86 +8,42 @@ import { Form } from "@/components/ui/form";
 import Image from "next/image";
 import Link from "next/link";
 
-import { auth } from "@/firebase/client";
-import { signIn, signUp } from "@/lib/actions/auth.action";
-import { FirebaseError } from "firebase/app";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import useAuth from "@/hooks/useAuth";
+import { FC } from "react";
 import FormField from "./FormField";
 import { Button } from "./ui/button";
 
+//** Schema para el login y registro de usuarios */
 const authFormSchema = (type: FormType) => {
   return z.object({
-    name:
-      type === "sign-up" ? z.string().min(3, "El nombre es obligatorio") : z.string().optional(),
+    name: type === "sign-up" ? z.string().min(3, "El nombre es obligatorio") : z.string().optional(),
     email: z.string().email("Correo inválido"),
     password: z.string().min(3, "La contraseña debe tener al menos 3 caracteres"),
   });
 };
 
-const AuthForm = ({ type }: { type: FormType }) => {
-  const router = useRouter();
+export type FormType = "sign-in" | "sign-up";
+
+interface AuthFormProps {
+  type: FormType;
+}
+
+const AuthForm: FC<AuthFormProps> = ({ type }) => {
+  const isSignIn = type === "sign-in";
   const formSchema = authFormSchema(type);
-  // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-    },
-  });
+  const { handleSignUp, handleSignIn } = useAuth();
+
+  const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues: { name: "", email: "", password: "" } });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      if (type === "sign-up") {
-        //* Envia los valores al server action para registrar al usuario *//
-        const { name, email, password } = values;
-        const userCretentials = await createUserWithEmailAndPassword(auth, email, password);
-        const result = await signUp({
-          uid: userCretentials.user.uid,
-          name: name!,
-          email,
-          password,
-        });
-        if (!result?.success) {
-          toast.error(result?.message);
-          return;
-        }
-
-        toast.success("Registro exitoso. Por favor inicie sesión para continuar");
-        router.push("/sign-in");
-      } else {
-        //* Envia los valores al server action para iniciar sesión *//
-        const { email, password } = values;
-        const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-        const idToken = await userCredentials.user.getIdToken();
-
-        if (!idToken) {
-          toast.error("Error al iniciar sesión");
-          return;
-        }
-        const result = signIn({ email, idToken });
-        // toast.success("Inicio de sesión exitoso");
-        toast.promise(result, {
-          loading: "Iniciando sesión...",
-          success: "Inicio de sesión exitoso",
-          error: "Error al iniciar sesión",
-        });
-        router.push("/");
-      }
-    } catch (error) {
-      if (error instanceof FirebaseError) {
-        if (error.code === "auth/invalid-credential") {
-          toast.error("Correo o contraseña incorrectos");
-          return;
-        }
-      }
+    if (type === "sign-up") {
+      const { name, email, password } = values;
+      await handleSignUp(name!, email, password);
+    } else {
+      const { email, password } = values;
+      await handleSignIn(email, password);
     }
   }
-
-  const isSignIn = type === "sign-in";
 
   return (
     <div className="card-border lg:min-w-[566px]">
@@ -131,11 +87,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
         <p className="text-center">
           {isSignIn ? "¿No tienes una cuenta?" : "¿Ya tienes una cuenta?"}
-          <Link
-            prefetch
-            href={isSignIn ? "/sign-up" : "/sign-in"}
-            className="font-bold text-user-primary ml-1"
-          >
+          <Link prefetch href={isSignIn ? "/sign-up" : "/sign-in"} className="font-bold text-user-primary ml-1">
             {!isSignIn ? "Iniciar sesión" : "Regístrate"}
           </Link>
         </p>
