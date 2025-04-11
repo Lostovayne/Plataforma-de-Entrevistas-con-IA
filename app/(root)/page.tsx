@@ -1,7 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import InterviewCard from '@/components/InterviewCard';
 import { Button } from '@/components/ui/button';
 import { dummyInterviews } from '@/constants';
-import Image from 'next/image';
 import Link from 'next/link';
 
 function HomePage() {
@@ -15,12 +15,12 @@ function HomePage() {
             <Link href={'/interview'}>Iniciar una entrevista</Link>
           </Button>
         </div>
-        <Image
-          src={'/robot.png'}
+        <img
+          src={'/robot.webp'}
           alt="Robot dude"
-          width={400}
-          height={400}
-          className="max-sm:hidden"
+          // width={400}
+          // height={250}
+          className="max-sm:hidden object-cover w-auto max-h-[280px]"
         />
       </section>
 
