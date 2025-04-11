@@ -89,20 +89,6 @@ jobs:
       - name: Type check
         run: bun run tsc --noEmit
 
-      # Verificaciones de seguridad
-      - name: Security audit for dependencies
-        run: |
-          # Check for known vulnerabilities (alternative to npm audit)
-          bun pm ls --all | grep -i "warning\|vulnerability\|deprecated" || echo "No security warnings found"
-
-          # Check outdated packages that might have security fixes
-          bun pm outdated
-        continue-on-error: true
-
-      # Verificaciones de dependencias
-      # - name: Check for dependency errors
-      #   run: bun pm ls --omit=dev
-
       # Paso de construcción para verificar que la aplicación se construye correctamente
       - name: Build application
         run: bun run build
