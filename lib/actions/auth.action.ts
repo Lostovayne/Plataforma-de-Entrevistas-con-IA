@@ -45,6 +45,7 @@ export async function signUp(params: SignUpParams): Promise<{ success: boolean; 
   }
 }
 
+
 export async function signIn(params: SignInParams): Promise<{ success: boolean; message: string } | undefined> {
   const { email, idToken } = params;
 
