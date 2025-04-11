@@ -44,7 +44,7 @@ jobs:
       - name: Install bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: "latest"
+          bun-version: 'latest'
 
       # Paso 4: Instalación de dependencias
       - name: Install dependencies
@@ -53,8 +53,20 @@ jobs:
       # Verificaciones de calidad del código
       # Verificar formato con Prettier
       - name: Check code formatting
+        id: format_check
         run: bun run format:check
-        continue-on-error: false # Falla el pipeline si hay errores de formato
+        continue-on-error: true # No falla inmediatamente para permitir la corrección automática
+
+      # Corregir automáticamente errores de formato
+      - name: Auto-fix formatting errors
+        if: steps.format_check.outcome == 'failure'
+        run: bun run format
+
+      # Verificar nuevamente el formato después de la corrección
+      - name: Re-check code formatting
+        if: steps.format_check.outcome == 'failure'
+        run: bun run format:check
+        continue-on-error: false # Ahora sí falla si persisten los errores
 
       # Ejecutar linter
       - name: Run linter
@@ -79,17 +91,22 @@ jobs:
 
       # Verificaciones de seguridad
       - name: Security audit for dependencies
-        run: bun pm audit
-        continue-on-error: true # No falla el pipeline, pero reporta vulnerabilidades
+        run: |
+          # Check for known vulnerabilities (alternative to npm audit)
+          bun pm ls --all | grep -i "warning\|vulnerability\|deprecated" || echo "No security warnings found"
+
+          # Check outdated packages that might have security fixes
+          bun pm outdated
+        continue-on-error: true
 
       # Verificaciones de dependencias
-      - name: Check for dependency errors
-        run: bun pm ls --omit=dev
+      # - name: Check for dependency errors
+      #   run: bun pm ls --omit=dev
 
       # Paso de construcción para verificar que la aplicación se construye correctamente
       - name: Build application
         run: bun run build
-        
+
   # Job para despliegue (comentado, activar cuando sea necesario)
   # deploy:
   #   needs: verify

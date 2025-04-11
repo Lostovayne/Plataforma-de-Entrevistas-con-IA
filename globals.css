@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @plugin "tailwindcss-animate";
 
@@ -22,9 +22,9 @@
   --color-dark-200: #27282f;
   --color-dark-300: #242633;
 
-  --font-mona-sans: "Mona Sans", sans-serif;
+  --font-mona-sans: 'Mona Sans', sans-serif;
 
-  --bg-pattern: url("/pattern.png");
+  --bg-pattern: url('/pattern.png');
 }
 
 :root {
