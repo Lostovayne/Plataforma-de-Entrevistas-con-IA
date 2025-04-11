@@ -1,0 +1,19 @@
+# Directorios generados
+.next/
+node_modules/
+build/
+dist/
+
+# Archivos generados
+*.lock
+*.log
+
+# Archivos de configuración específicos
+.env*
+!.env.example
+
+# Otros archivos que no necesitan formato
+public/
+*.md
+*.js
+*.jsx

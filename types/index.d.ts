@@ -52,7 +52,7 @@ interface AgentProps {
   userId?: string;
   interviewId?: string;
   feedbackId?: string;
-  type: "generate" | "interview";
+  type: 'generate' | 'interview';
   questions?: string[];
 }
 
@@ -80,10 +80,10 @@ interface SignUpParams {
   uid: string;
   name: string;
   email: string;
-  password: string;
+  // password: string;
 }
 
-type FormType = "sign-in" | "sign-up";
+type FormType = 'sign-in' | 'sign-up';
 
 interface InterviewFormProps {
   interviewId: string;

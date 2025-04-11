@@ -4,9 +4,9 @@
  * @author PrepWise Team
  */
 
-const fs = require("fs");
-const { execSync } = require("child_process");
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const fs = require('fs');
+const { execSync } = require('child_process');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 /**
  * @typedef {Object} DiffResult
@@ -17,17 +17,17 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Verificar que la API key está disponible
 if (!process.env.GEMINI_API_KEY) {
-  console.error("Error: GEMINI_API_KEY no está definida en las variables de entorno");
+  console.error('Error: GEMINI_API_KEY no está definida en las variables de entorno');
   process.exit(1);
 }
 
-console.log("Inicializando Gemini API con la clave proporcionada");
+console.log('Inicializando Gemini API con la clave proporcionada');
 const apiKey = process.env.GEMINI_API_KEY.trim(); // Eliminar posibles espacios en blanco
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Constantes de configuración
 const MAX_CHANGES_LENGTH = 15000;
-const DEFAULT_BASE_BRANCH = "main";
+const DEFAULT_BASE_BRANCH = 'main';
 
 /**
  * Obtiene los cambios en formato diff entre ramas o de los cambios staged
@@ -35,22 +35,22 @@ const DEFAULT_BASE_BRANCH = "main";
  */
 async function getPullRequestChanges() {
   // Intentar obtener cambios staged primero
-  console.log("Obteniendo cambios de la PR...");
-  const diffOutput = execSync("git diff --staged").toString();
+  console.log('Obteniendo cambios de la PR...');
+  const diffOutput = execSync('git diff --staged').toString();
 
   // Si hay cambios staged, usarlos
-  if (diffOutput && diffOutput.trim() !== "") {
+  if (diffOutput && diffOutput.trim() !== '') {
     return processDiffOutput(diffOutput);
   }
 
   // Si no hay cambios staged, obtener diff entre ramas
-  console.log("No se encontraron cambios staged, obteniendo diff entre ramas...");
+  console.log('No se encontraron cambios staged, obteniendo diff entre ramas...');
   try {
     return await getDiffBetweenBranches();
   } catch (diffError) {
-    console.error("Error al obtener el diff entre ramas:", diffError);
+    console.error('Error al obtener el diff entre ramas:', diffError);
     return {
-      changes: "No se pudieron obtener los cambios de la PR.",
+      changes: 'No se pudieron obtener los cambios de la PR.',
       truncated: false,
       originalLength: 0,
     };
@@ -94,7 +94,9 @@ function processDiffOutput(diffOutput) {
       `Los cambios son muy extensos (${diffOutput.length} caracteres), limitando a ${MAX_CHANGES_LENGTH} caracteres...`
     );
     return {
-      changes: diffOutput.substring(0, MAX_CHANGES_LENGTH) + "\n\n[... Cambios truncados debido al tamaño ...]",
+      changes:
+        diffOutput.substring(0, MAX_CHANGES_LENGTH) +
+        '\n\n[... Cambios truncados debido al tamaño ...]',
       truncated: true,
       originalLength: diffOutput.length,
     };
@@ -113,15 +115,15 @@ function processDiffOutput(diffOutput) {
  */
 async function reviewPullRequest() {
   try {
-    console.log("Iniciando revisión de PR con Gemini...");
+    console.log('Iniciando revisión de PR con Gemini...');
     // Usar el modelo más reciente (2.0 Pro)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    console.log("Modelo seleccionado: gemini-2.0-flash");
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    console.log('Modelo seleccionado: gemini-2.0-flash');
 
     // Obtener los cambios de la PR
     const { changes: prChanges, truncated } = await getPullRequestChanges();
     if (truncated) {
-      console.log("Advertencia: Los cambios fueron truncados para ajustarse al límite de tokens.");
+      console.log('Advertencia: Los cambios fueron truncados para ajustarse al límite de tokens.');
     }
 
     /**
@@ -176,15 +178,15 @@ Sé específico y detallado en tus sugerencias, pero mantén un tono constructiv
 
     const prompt = generatePrompt(prChanges);
 
-    console.log("Enviando prompt a Gemini API...");
+    console.log('Enviando prompt a Gemini API...');
     const result = await model.generateContent(prompt);
-    console.log("Respuesta recibida de Gemini API");
+    console.log('Respuesta recibida de Gemini API');
     const response = await result.response;
     const review = response.text();
 
     // Guardar la revisión en el README para que el workflow pueda leerla
     await updateReadmeWithReview(review);
-    console.log("Revisión generada exitosamente para la PR");
+    console.log('Revisión generada exitosamente para la PR');
   } catch (error) {
     console.error(`Error al revisar la PR con Gemini: ${error.message}`);
     process.exit(1);
@@ -196,18 +198,18 @@ Sé específico y detallado en tus sugerencias, pero mantén un tono constructiv
    * @returns {Promise<void>}
    */
   async function updateReadmeWithReview(review) {
-    console.log("Actualizando README con la revisión generada");
-    const readmePath = "../README.md";
+    console.log('Actualizando README con la revisión generada');
+    const readmePath = '../README.md';
 
     try {
       // Leer el contenido actual del README
-      let readmeContent = fs.readFileSync(readmePath, "utf8");
+      let readmeContent = fs.readFileSync(readmePath, 'utf8');
 
       // Crear una copia temporal del README con los cambios
       let updatedContent = readmeContent;
 
       // Actualizar o añadir la sección de Resumen de Cambios
-      if (updatedContent.includes("## Resumen de Cambios")) {
+      if (updatedContent.includes('## Resumen de Cambios')) {
         updatedContent = updatedContent.replace(
           /## Resumen de Cambios[\s\S]*?(?=##|$)/,
           `## Resumen de Cambios\n\n${review}\n\n`
@@ -218,13 +220,13 @@ Sé específico y detallado en tus sugerencias, pero mantén un tono constructiv
 
       // Escribir el contenido actualizado en el README
       fs.writeFileSync(readmePath, updatedContent);
-      console.log("README actualizado correctamente");
+      console.log('README actualizado correctamente');
     } catch (readError) {
       console.error(`Error al actualizar README: ${readError.message}`);
       // Crear un nuevo README si no existe
       const basicContent = `# Resumen de Cambios\n\n${review}\n`;
       fs.writeFileSync(readmePath, basicContent);
-      console.log("Se creó un nuevo README con la revisión");
+      console.log('Se creó un nuevo README con la revisión');
     }
   }
 }

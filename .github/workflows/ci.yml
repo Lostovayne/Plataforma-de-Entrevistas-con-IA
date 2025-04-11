@@ -25,6 +25,8 @@ jobs:
     steps:
       # Paso 1: Checkout del código
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Obtener historial completo para análisis de cambios
 
       # Paso 2: Configuración de caché para optimizar tiempos de construcción
       - name: Cache bun modules
@@ -42,20 +44,61 @@ jobs:
       - name: Install bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: "latest"
+          bun-version: 'latest'
 
       # Paso 4: Instalación de dependencias
       - name: Install dependencies
         run: bun install
 
       # Verificaciones de calidad del código
+      # Verificar formato con Prettier
+      - name: Check code formatting
+        id: format_check
+        run: bun run format:check
+        continue-on-error: true # No falla inmediatamente para permitir la corrección automática
+
+      # Corregir automáticamente errores de formato
+      - name: Auto-fix formatting errors
+        if: steps.format_check.outcome == 'failure'
+        run: bun run format
+
+      # Verificar nuevamente el formato después de la corrección
+      - name: Re-check code formatting
+        if: steps.format_check.outcome == 'failure'
+        run: bun run format:check
+        continue-on-error: false # Ahora sí falla si persisten los errores
+
+      # Ejecutar linter
       - name: Run linter
         run: bun run lint
+        continue-on-error: false # Falla el pipeline si hay errores de linting
 
-      # Verificaciones de seguridad
-      # - name: Security audit for dependencies
-      # run: bun pm audit
+      # Paso para corregir automáticamente errores de formato y linting (opcional)
+      - name: Auto-fix formatting and linting errors
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          bun run format
+          bun run lint --fix
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Auto-fix: Format code with Prettier and apply ESLint fixes" || echo "No changes to commit"
+          git push || echo "No changes to push"
 
-      # Verificaciones de dependencias
-      - name: Check for dependency errors
-        run: bun pm ls --omit=dev
+      # Verificaciones de tipos de TypeScript
+      - name: Type check
+        run: bun run tsc --noEmit
+
+      # Paso de construcción para verificar que la aplicación se construye correctamente
+      - name: Build application
+        run: bun run build
+
+  # Job para despliegue (comentado, activar cuando sea necesario)
+  # deploy:
+  #   needs: verify
+  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Deploy to production
+  #       run: echo "Implementar pasos de despliegue aquí"
