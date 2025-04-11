@@ -117,8 +117,8 @@ async function reviewPullRequest() {
   try {
     console.log('Iniciando revisión de PR con Gemini...');
     // Usar el modelo más reciente (2.0 Pro)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro-preview-03-25' });
-    console.log('Modelo seleccionado: gemini-2.5-pro-preview-03-25');
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    console.log('Modelo seleccionado: gemini-2.0-flash');
 
     // Obtener los cambios de la PR
     const { changes: prChanges, truncated } = await getPullRequestChanges();
