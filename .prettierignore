@@ -15,3 +15,5 @@ dist/
 # Otros archivos que no necesitan formato
 public/
 *.md
+*.js
+*.jsx
