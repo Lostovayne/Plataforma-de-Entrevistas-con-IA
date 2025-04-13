@@ -62,15 +62,15 @@ const useAuth = () => {
         return { success: false, message: 'Error al iniciar sesión' };
       }
       const result = signIn({ email, idToken });
-
       toast.promise(result, {
         loading: 'Iniciando sesión...',
-        success: 'Inicio de sesión exitoso',
+        success: () => {
+          router.push('/');
+          return 'Inicio de sesión exitoso';
+        },
         error: 'Error al iniciar sesión',
       });
-
-      router.push('/');
-      return { success: true };
+      return { success: false };
     } catch (error) {
       if (error instanceof FirebaseError) {
         if (error.code === 'auth/invalid-credential') {
