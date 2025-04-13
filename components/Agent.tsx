@@ -47,6 +47,20 @@ const Agent = ({userName}: AgentProps) => {
         </div>
       </div>
     </div>
+      {
+        messages.length > 0 && (
+          <div className='transcript-border' >
+            <div className='transcript' >
+              <p key={lastMessage} className={cn("transition-opacity duration-500 opacity-0",
+                "animate-fadeIn opacity-100"
+              )} >
+                {lastMessage}
+              </p>
+            </div>
+          </div>
+        )
+      }
+
     <div className='w-full flex justify-center' >
       { callStatus !== "ACTIVE" ? (
         <button className='relative btn-call' >
