@@ -1,7 +1,9 @@
+
 /* eslint-disable @next/next/no-img-element */
 import InterviewCard from '@/components/InterviewCard';
 import { Button } from '@/components/ui/button';
 import { dummyInterviews } from '@/constants';
+
 import Link from 'next/link';
 
 function HomePage() {
