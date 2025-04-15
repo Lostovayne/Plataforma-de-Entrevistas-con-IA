@@ -3,6 +3,7 @@ import './globals.css';
 import { Metadata } from 'next/types';
 import { Toaster } from 'sonner';
 
+
 const monaSans = Mona_Sans({
   variable: '--font-mona-sans',
   subsets: ['latin'],

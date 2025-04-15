@@ -41,6 +41,7 @@ export async function signUp(
     return {
       success: false,
       message: 'Failed to create an account',
+
     };
   }
 }
@@ -84,6 +85,7 @@ export async function setSessionCookie(idToken: string): Promise<void> {
     path: '/',
     sameSite: 'lax',
   });
+
 }
 
 export async function getCurrentUser(): Promise<User | null> {
@@ -108,4 +110,5 @@ export async function getCurrentUser(): Promise<User | null> {
 export async function isAuthenticated(): Promise<boolean> {
   const user = await getCurrentUser();
   return !!user; //!!false = false and !!true = true
+
 }

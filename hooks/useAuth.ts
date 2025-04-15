@@ -62,6 +62,7 @@ const useAuth = () => {
         return { success: false, message: 'Error al iniciar sesión' };
       }
       const result = signIn({ email, idToken });
+
       toast.promise(result, {
         loading: 'Iniciando sesión...',
         success: () => {
@@ -71,6 +72,7 @@ const useAuth = () => {
         error: 'Error al iniciar sesión',
       });
       return { success: false };
+
     } catch (error) {
       if (error instanceof FirebaseError) {
         if (error.code === 'auth/invalid-credential') {
