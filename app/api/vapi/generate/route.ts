@@ -10,6 +10,24 @@ export async function GET() {
 export async function POST(request: Request) {
   const { type, role, level, techstack, amount, userid } = await request.json();
 
+  console.log(
+    'Listado de values que vienen del bot: ',
+    type,
+    role,
+    level,
+    techstack,
+    amount,
+    userid
+  );
+
+  if (!type || !role || !level || !techstack || !amount || !userid) {
+    return Response.json(
+      { success: false, error: 'Faltan parametros en la petición' },
+      { status: 400 }
+    );
+  }
+
+
   try {
     const { text: questions } = await generateText({
       model: google('gemini-2.0-flash-001'),
@@ -39,8 +57,11 @@ export async function POST(request: Request) {
 
     await db.collection('interviews').add(interview);
     return Response.json({ success: true }, { status: 200 });
-  } catch (error) {
-    console.log(error);
-    return Response.json({ success: false, error }, { status: 500 });
+
+  } catch {
+    return Response.json(
+      { success: false, error: 'Ocurrio un error en el endpoint' },
+      { status: 500 }
+    );
   }
 }
