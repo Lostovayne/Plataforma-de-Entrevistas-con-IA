@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" data-lt-installed="true">
+    <html lang="en" className="dark" data-lt-installed="true" suppressHydrationWarning>
       <body className={`${monaSans.className} antialiased pattern`}>
         {children}
         <Toaster richColors={true} />
