@@ -132,48 +132,117 @@ async function reviewPullRequest() {
      * @returns {string} El prompt completo para enviar a la API
      */
     function generatePrompt(prChanges) {
-      return `Eres un revisor senior de TypeScript con 10+ años de experiencia. Analiza estos cambios de PR y proporciona una revisión detallada y útil:
+      // Analizar si hay código suficiente para una revisión detallada
+      const hasSubstantialCode = prChanges.length > 500 && 
+        (prChanges.includes('.ts') || prChanges.includes('.tsx') || 
+         prChanges.includes('.js') || prChanges.includes('.jsx'));
+      
+      // Detectar el lenguaje principal usado en los cambios
+      const isTypeScript = prChanges.includes('.ts') || prChanges.includes('.tsx') ||
+                          (prChanges.includes('interface ') && prChanges.includes('type ')) ||
+                          (prChanges.includes(': ') && prChanges.includes('=> '));
+      const isJavaScript = prChanges.includes('.js') || prChanges.includes('.jsx') ||
+                          prChanges.includes('function ') || prChanges.includes('const ') ||
+                          prChanges.includes('let ') || prChanges.includes('var ');
+      const isReact = prChanges.includes('React') || prChanges.includes('useState') ||
+                     prChanges.includes('useEffect') || prChanges.includes('Component') ||
+                     prChanges.includes('jsx') || prChanges.includes('tsx');
+      
+      // Detectar características específicas del código
+      const hasTypeDefinitions = prChanges.includes('interface ') || prChanges.includes('type ') ||
+                               prChanges.includes('enum ') || prChanges.includes('<') && prChanges.includes('>');
+      const hasAdvancedPatterns = prChanges.includes('extends ') || prChanges.includes('implements ') ||
+                                prChanges.includes('abstract ') || prChanges.includes('generic') ||
+                                prChanges.includes('Partial<') || prChanges.includes('Pick<') ||
+                                prChanges.includes('Omit<') || prChanges.includes('ReturnType<');
+      const hasAsyncCode = prChanges.includes('async ') || prChanges.includes('await ') ||
+                         prChanges.includes('Promise') || prChanges.includes('.then(');
+      
+      // Detectar si hay cambios que podrían involucrar principios SOLID o patrones de diseño
+      const mightInvolveSolid = prChanges.includes('class ') || 
+                               prChanges.includes('interface ') || 
+                               prChanges.includes('extends ') || 
+                               prChanges.includes('implements ') || 
+                               prChanges.length > 1000;
+      const mightInvolvePatterns = prChanges.includes('Factory') || prChanges.includes('Singleton') ||
+                                 prChanges.includes('Observer') || prChanges.includes('Strategy') ||
+                                 prChanges.includes('Provider') || prChanges.includes('Context') ||
+                                 prChanges.includes('Decorator') || prChanges.includes('HOC');
+      
+      // Detectar si hay código que podría beneficiarse de tipos avanzados de TypeScript
+      const couldUseAdvancedTypes = isTypeScript && (
+        prChanges.includes('any') || 
+        prChanges.includes('Object') || 
+        prChanges.includes('Function') ||
+        (prChanges.includes('[]') && !prChanges.includes('<'))
+      );
+      
+      // Determinar el perfil del revisor según el lenguaje detectado
+      const reviewerProfile = isTypeScript 
+        ? "un revisor senior de TypeScript con 10+ años de experiencia" 
+        : isReact 
+          ? "un revisor senior de React con amplia experiencia en JavaScript/TypeScript" 
+          : isJavaScript 
+            ? "un revisor senior de JavaScript con amplia experiencia en desarrollo web" 
+            : "un revisor senior de código con amplia experiencia en desarrollo de software";
+
+      return `Eres ${reviewerProfile}. Analiza estos cambios de PR y proporciona una revisión útil y proporcionada al tamaño y tipo de cambios:
 
 1. **Título conciso**:
    - Genera un título descriptivo (máx 10 palabras) que capture la esencia de los cambios
 
 2. **Análisis de cambios**:
-   - Proporciona un resumen detallado (3-5 líneas) explicando los cambios principales
+   - Proporciona un resumen explicando los cambios principales
    - Identifica el propósito y el impacto de los cambios
+   - Adapta la longitud del análisis al tamaño de los cambios (breve para cambios pequeños)
 
-3. **Evaluación de código**:
-   - Principios SOLID: ¿Los cambios siguen los principios SOLID? Identifica violaciones específicas
-   - Nomenclatura: ¿Los nombres de variables, funciones y clases son descriptivos y siguen un estándar consistente?
-   - Estructura: ¿El código está bien organizado? ¿Hay dependencias excesivas entre componentes?
+${hasSubstantialCode ? `3. **Evaluación de código**:
+   ${mightInvolveSolid ? `- Principios SOLID: Solo si son relevantes para estos cambios específicos. No expliques los principios si no hay código que los requiera.
+   ` : ''}${mightInvolvePatterns ? `- Patrones de diseño: Identifica si se están utilizando patrones y si están bien implementados. Sugiere patrones apropiados solo si mejorarían significativamente el código.
+   ` : ''}- Nomenclatura: ¿Los nombres de variables, funciones y clases son descriptivos y siguen un estándar consistente?
+   - Estructura: ¿El código está bien organizado?
+   ${hasAsyncCode ? `- Manejo asíncrono: ¿El código maneja correctamente las operaciones asíncronas y los posibles errores?
+   ` : ''}
 
-4. **Mejoras de tipado**:
-   - Analiza el tipado actual y sugiere mejoras específicas
-   - Recomienda uso de tipos avanzados de TypeScript cuando sea apropiado:
-     * Interfaces vs Types: ¿Cuál es más adecuado en este contexto?
-     * Genéricos: ¿Se podrían usar para mejorar la flexibilidad y reutilización?
-     * Type Guards: ¿Se necesitan para manejar diferentes tipos de datos?
-     * Utility Types: ¿Podrían usarse Partial, Pick, Omit, etc.?
-     * Enums: ¿Hay conjuntos de valores relacionados que podrían modelarse como enums?
+` : ''}
+${isTypeScript ? `4. **Mejoras de tipado**:
+   - Analiza el tipado actual y sugiere mejoras específicas si son necesarias
+   ${hasTypeDefinitions ? `- Revisa las definiciones de tipos e interfaces para asegurar que sean precisas y reutilizables
+   ` : ''}${couldUseAdvancedTypes ? `- Recomienda el uso de tipos avanzados de TypeScript que podrían mejorar el código, como:
+     - Utility Types (Partial<T>, Pick<T, K>, Omit<T, K>, ReturnType<T>, Parameters<T>)
+     - Tipos condicionales y mapped types
+     - Inferencia de tipos (infer)
+     - Tipos genéricos
+   ` : ''}${hasAdvancedPatterns ? `- Verifica que los patrones genéricos y las abstracciones de tipos estén correctamente implementados
+   ` : ''}
 
+` : isJavaScript ? `4. **Mejoras de JavaScript**:
+   - Analiza el uso de características modernas de JavaScript (ES6+)
+   - Sugiere mejoras en la estructura y organización del código
+   ${hasAsyncCode ? `- Verifica el manejo adecuado de Promises y código asíncrono
+   ` : ''}
+
+` : ''}
 5. **Sugerencias de mejora**:
-   - Proporciona ejemplos concretos de código mejorado
-   - Sugiere refactorizaciones para mejorar la legibilidad, mantenibilidad y rendimiento
-   - Recomienda patrones de diseño apropiados cuando sea relevante
+   - Si hay mejoras posibles, proporciona ejemplos concretos de código mejorado
+   - Si el código ya está bien implementado, felicita al autor y menciona los aspectos positivos
+   - No sugieras cambios innecesarios si el código ya es adecuado
+   ${isJavaScript && !isTypeScript ? `- Si es apropiado, sugiere cómo el código podría beneficiarse de la migración a TypeScript
+   ` : ''}
 
 Cambios de la PR:
 \`\`\`diff
 ${prChanges}
 \`\`\`
 
-Formato de respuesta:
-1. **Título**: Un título descriptivo y conciso
-2. **Resumen**: Explicación clara de los cambios y su propósito
-3. **Análisis de código**: Evaluación de principios SOLID, nomenclatura y estructura
-4. **Mejoras de tipado**: Sugerencias específicas con ejemplos de código
-5. **Optimizaciones**: Recomendaciones concretas para mejorar el código
-
-Proporciona ejemplos de código en bloques de código markdown para facilitar su copia.
-Sé específico y detallado en tus sugerencias, pero mantén un tono constructivo y profesional.`;
+Instrucciones importantes:
+- Adapta tu respuesta al tamaño y complejidad de los cambios
+- Si los cambios son pequeños o simples, tu revisión debe ser breve y concisa
+- No expliques conceptos teóricos (como SOLID o patrones de diseño) si no hay código que lo requiera
+- Si no hay código TypeScript para revisar, omite esa sección
+- Si el código es excelente, felicita al autor en lugar de buscar problemas inexistentes
+- Sé específico en tus sugerencias, pero mantén un tono constructivo y profesional
+- Incluye ejemplos de código cuando sea útil para ilustrar mejoras sugeridas`;
     }
 
     const prompt = generatePrompt(prChanges);
