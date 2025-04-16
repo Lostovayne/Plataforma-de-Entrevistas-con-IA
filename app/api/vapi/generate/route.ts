@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     );
   }
 
+
   try {
     const { text: questions } = await generateText({
       model: google('gemini-2.0-flash-001'),
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
 
     await db.collection('interviews').add(interview);
     return Response.json({ success: true }, { status: 200 });
+
   } catch {
     return Response.json(
       { success: false, error: 'Ocurrio un error en el endpoint' },
