@@ -1,12 +1,32 @@
-
 /* eslint-disable @next/next/no-img-element */
 import InterviewCard from '@/components/InterviewCard';
 import { Button } from '@/components/ui/button';
-import { dummyInterviews } from '@/constants';
+import {
+  getCurrentUser,
+  getInterviewByUserId,
+  getLatestInterviews,
+} from '@/lib/actions/auth.action';
 
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-function HomePage() {
+async function HomePage() {
+  const user = await getCurrentUser();
+  if (!user) redirect('/sign-up');
+
+  //* Optimization */
+
+  const [userInterviews, latestInterviews] = await Promise.all([
+    getInterviewByUserId(user.id!),
+    getLatestInterviews({ userId: user.id! }),
+  ]);
+
+  const hasPastInterviews: boolean = !!userInterviews && userInterviews?.length > 0;
+  const hasUpcomingInterviews: boolean = !!latestInterviews && latestInterviews?.length > 0;
+
+  console.log('🚀 ~ file: page.tsx:26 ~ HomePage ~ userInterviews:', hasUpcomingInterviews);
+  console.log('🚀 ~ file: page.tsx:25 ~ HomePage ~ latestInterviews:', hasPastInterviews);
+
   return (
     <>
       <section className="card-cta max-h-72">
@@ -29,18 +49,24 @@ function HomePage() {
       <section className="flex flex-col gap-6 mt-8">
         <h2>Tus Entrevistas</h2>
         <div className="interviews-section">
-          {dummyInterviews.map(interview => (
-            <InterviewCard key={interview.id} {...interview} />
-          ))}
+          {hasPastInterviews ? (
+            userInterviews?.map(interview => <InterviewCard key={interview.id} {...interview} />)
+          ) : (
+            <p className="text-lg">
+              Aún no has realizado ninguna entrevista. Hágala ahora para mejorar tus habilidades.
+            </p>
+          )}
         </div>
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
         <h2>Hacer una entrevista</h2>
         <div className="interviews-section">
-          {dummyInterviews.map(interview => (
-            <InterviewCard key={interview.id} {...interview} />
-          ))}
+          {hasUpcomingInterviews ? (
+            latestInterviews?.map(interview => <InterviewCard key={interview.id} {...interview} />)
+          ) : (
+            <p className="text-lg">No hay nuevas entrevistas disponibles</p>
+          )}
         </div>
       </section>
     </>

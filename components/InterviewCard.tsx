@@ -14,7 +14,6 @@ const InterviewCard = ({
   techstack,
   createdAt,
 }: InterviewCardProps) => {
-  console.log(userId);
   const feedback = null as Feedback | null;
   const normalizedType = /mix/gi.test(type) ? 'Mixed' : type;
   const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now())
