@@ -1,11 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import InterviewCard from '@/components/InterviewCard';
 import { Button } from '@/components/ui/button';
-import {
-  getCurrentUser,
-  getInterviewByUserId,
-  getLatestInterviews,
-} from '@/lib/actions/auth.action';
+import { getCurrentUser } from '@/lib/actions/auth.action';
+import { getInterviewByUserId, getLatestInterviews } from '@/lib/actions/general.action';
 
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -15,7 +12,6 @@ async function HomePage() {
   if (!user) redirect('/sign-up');
 
   //* Optimization */
-
   const [userInterviews, latestInterviews] = await Promise.all([
     getInterviewByUserId(user.id!),
     getLatestInterviews({ userId: user.id! }),
@@ -24,8 +20,8 @@ async function HomePage() {
   const hasPastInterviews: boolean = !!userInterviews && userInterviews?.length > 0;
   const hasUpcomingInterviews: boolean = !!latestInterviews && latestInterviews?.length > 0;
 
-  console.log('🚀 ~ file: page.tsx:26 ~ HomePage ~ userInterviews:', hasUpcomingInterviews);
   console.log('🚀 ~ file: page.tsx:25 ~ HomePage ~ latestInterviews:', hasPastInterviews);
+  console.log('🚀 ~ file: page.tsx:26 ~ HomePage ~ userInterviews:', hasUpcomingInterviews);
 
   return (
     <>

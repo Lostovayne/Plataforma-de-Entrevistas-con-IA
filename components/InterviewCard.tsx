@@ -7,7 +7,7 @@ import 'dayjs/locale/es';
 import DisplayTechIcons from './DisplayTechIcons';
 
 const InterviewCard = ({
-  interviewId,
+  id,
   userId,
   role,
   type,
@@ -15,10 +15,12 @@ const InterviewCard = ({
   createdAt,
 }: InterviewCardProps) => {
   const feedback = null as Feedback | null;
-  const normalizedType = /mix/gi.test(type) ? 'Mixed' : type;
+  const normalizedType = /mixta/gi.test(type) ? 'Mixed' : type;
   const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now())
     .locale('es')
     .format('MMMM D, YYYY');
+  
+    console.log(userId)
   return (
     <div className="card-border w-[360px] max-sm:w-full min-h-96 mask-radial-from-85%">
       <div className="card-interview">
@@ -56,7 +58,7 @@ const InterviewCard = ({
           <DisplayTechIcons techStack={techstack} />
           <Button className="btn-primary">
             <Link
-              href={feedback ? `/interview/${interviewId}/feedback` : `/interview/${interviewId}`}
+              href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}
             >
               {feedback ? 'Ver feedback' : 'Realizar entrevista'}
             </Link>
