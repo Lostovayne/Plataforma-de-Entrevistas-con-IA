@@ -1,3 +1,4 @@
+'use server';
 import { feedbackSchema } from '@/constants';
 import { db } from '@/firebase/admin';
 import { google } from '@ai-sdk/google';
@@ -100,6 +101,7 @@ export async function getFeedbackByInterviewId(
   params: GetFeedbackByInterviewIdParams
 ): Promise<Feedback | null> {
   const { interviewId, userId } = params;
+
   const feedbacks = await db
     .collection('feedbacks')
     .where('interviewId', '==', interviewId)

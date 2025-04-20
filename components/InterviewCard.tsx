@@ -1,12 +1,13 @@
+import { getFeedbackByInterviewId } from '@/lib/actions/general.action';
+import { getRandomInterviewCover } from '@/lib/utils';
 import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getRandomInterviewCover } from '@/lib/utils';
-import { Button } from './ui/button';
-import 'dayjs/locale/es';
 import DisplayTechIcons from './DisplayTechIcons';
+import { Button } from './ui/button';
 
-const InterviewCard = ({
+const InterviewCard = async ({
   id,
   userId,
   role,
@@ -14,13 +15,16 @@ const InterviewCard = ({
   techstack,
   createdAt,
 }: InterviewCardProps) => {
-  const feedback = null as Feedback | null;
+  const feedback = await getFeedbackByInterviewId({
+    interviewId: id as string,
+    userId: userId as string,
+  });
+
   const normalizedType = /mixta/gi.test(type) ? 'Mixed' : type;
   const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now())
     .locale('es')
     .format('MMMM D, YYYY');
-  
-    console.log(userId)
+
   return (
     <div className="card-border w-[360px] max-sm:w-full min-h-96 mask-radial-from-85%">
       <div className="card-interview">
@@ -49,17 +53,16 @@ const InterviewCard = ({
           </div>
 
           <p className="line-clamp-2 mt-5">
-            {feedback?.finalAssessment ||
-              'Aún no has realizado la entrevista. Hágala ahora para mejorar tus habilidades.'}
+            {feedback?.finalAssessment
+              ? feedback?.finalAssessment
+              : 'Aún no has realizado la entrevista. Hágala ahora para mejorar tus habilidades.'}
           </p>
         </div>
 
         <div className="flex flex-row justify-between">
           <DisplayTechIcons techStack={techstack} />
           <Button className="btn-primary">
-            <Link
-              href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}
-            >
+            <Link href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}>
               {feedback ? 'Ver feedback' : 'Realizar entrevista'}
             </Link>
           </Button>

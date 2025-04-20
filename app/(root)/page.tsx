@@ -20,9 +20,6 @@ async function HomePage() {
   const hasPastInterviews: boolean = !!userInterviews && userInterviews?.length > 0;
   const hasUpcomingInterviews: boolean = !!latestInterviews && latestInterviews?.length > 0;
 
-  console.log('🚀 ~ file: page.tsx:25 ~ HomePage ~ latestInterviews:', hasPastInterviews);
-  console.log('🚀 ~ file: page.tsx:26 ~ HomePage ~ userInterviews:', hasUpcomingInterviews);
-
   return (
     <>
       <section className="card-cta max-h-72">
@@ -56,10 +53,12 @@ async function HomePage() {
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Hacer una entrevista</h2>
+        <h2>Entrevistas Generales</h2>
         <div className="interviews-section">
           {hasUpcomingInterviews ? (
-            latestInterviews?.map(interview => <InterviewCard key={interview.id} {...interview} />)
+            latestInterviews?.map(interview => (
+              <InterviewCard key={interview.id} {...interview} userId={user.id} />
+            ))
           ) : (
             <p className="text-lg">No hay nuevas entrevistas disponibles</p>
           )}

@@ -10,16 +10,6 @@ export async function GET() {
 export async function POST(request: Request) {
   const { type, role, level, techstack, amount, userid } = await request.json();
 
-  console.log(
-    'Listado de values que vienen del bot: ',
-    type,
-    role,
-    level,
-    techstack,
-    amount,
-    userid
-  );
-
   if (!type || !role || !level || !techstack || !amount || !userid) {
     return Response.json(
       { success: false, error: 'Faltan parametros en la petición' },

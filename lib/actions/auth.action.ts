@@ -61,7 +61,7 @@ export async function signIn(
     // Create a session cookie
     await setSessionCookie(idToken);
   } catch (error) {
-    console.log('Error signing in', error);
+    console.error('Error signing in', error);
     return {
       success: false,
       message: 'Failed to log into an account',
@@ -100,7 +100,7 @@ export async function getCurrentUser(): Promise<User | null> {
       id: userRecord.id,
     } as User;
   } catch (error) {
-    console.log('Error getting current user', error);
+    console.error('Error getting current user', error);
     return null;
   }
 }

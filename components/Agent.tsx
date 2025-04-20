@@ -32,7 +32,7 @@ const Agent = ({ userName, userId, type, interviewId, questions }: AgentProps) =
       try {
         handleDisconnect();
       } catch (error) {
-        console.log('🚀 ~ file: Agent.tsx:101 ~ HomePage ~ onCallEnd ~ error:', error);
+        console.error(error);
       }
     };
 
@@ -75,7 +75,6 @@ const Agent = ({ userName, userId, type, interviewId, questions }: AgentProps) =
     if (success && id) {
       router.push(`/interview/${interviewId}/feedback/`);
     } else {
-      console.log('Error al generar feedback');
       router.push('/');
     }
   };
