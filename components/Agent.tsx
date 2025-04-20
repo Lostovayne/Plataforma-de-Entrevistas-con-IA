@@ -1,5 +1,6 @@
 'use client';
 import { interviewer } from '@/constants';
+import { createFeedback } from '@/lib/actions/general.action';
 import { cn } from '@/lib/utils';
 import { vapi } from '@/lib/vapi.sdk';
 import Image from 'next/image';
@@ -64,9 +65,13 @@ const Agent = ({ userName, userId, type, interviewId, questions }: AgentProps) =
   }, []);
 
   const handleGenerateFeedback = async (messages: SavedMessage[]) => {
-    console.log('Generando feedback aqui...');
     // TODO: Crear un server action para generar el feedback
-    const { success, id } = { success: true, id: 'feedback-id' };
+    const { success, feedbackId: id } = await createFeedback({
+      interviewId: interviewId!,
+      userId: userId!,
+      transcript: messages,
+    });
+
     if (success && id) {
       router.push(`/interview/${interviewId}/feedback/`);
     } else {
@@ -102,11 +107,11 @@ const Agent = ({ userName, userId, type, interviewId, questions }: AgentProps) =
       if (questions) {
         formattedQuestions = questions.map((question: string) => `- ${question}`).join('\n');
       }
-      await vapi.start(interviewer,{
-        variableValues:{
+      await vapi.start(interviewer, {
+        variableValues: {
           questions: formattedQuestions,
-        }
-      })
+        },
+      });
     }
   };
 
